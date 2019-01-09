@@ -38,17 +38,34 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	GetWorld()->
 		GetFirstPlayerController()->
 		GetPlayerViewPoint(PlayerViewPointLocation, PlayerViewPointRotation);
+	
+	//Calculating Line End using player rotation and reach
+	FVector LineEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*Reach;
 
-	//Draw a Green Line
+	//Draw a Green Line (only for testing purposes)
 	DrawDebugLine(
 		GetWorld(), 
 		PlayerViewPointLocation, 
-		PlayerViewPointLocation+PlayerViewPointRotation.Vector()*Reach, //Calculating Line End using player rotation and reach
+		LineEnd,
 		FColor(0,255,0), 
 		false, 
 		0.f, 
 		0, 
 		10.f);
+
+	//Line tracing (Ray casting)
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByObjectType(
+		Hit,
+		PlayerViewPointLocation,
+		LineEnd,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+		FCollisionQueryParams(FName(TEXT("")), false, GetOwner())
+	);
+
+	if (Hit.GetActor() != NULL) {
+		UE_LOG(LogTemp, Warning, TEXT("Hitting: %s"), *Hit.GetActor()->GetName());
+	}
 
 }
 
