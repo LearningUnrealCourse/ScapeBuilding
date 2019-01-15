@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Controller.h"
 
+
 // Sets default values for this component's properties
 UGrabber::UGrabber()
 {
@@ -21,37 +22,54 @@ UGrabber::UGrabber()
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
+	GetPhysicsHandle();
+	BindInputComponent();
 }
 
-
-// Called every frame
-void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UGrabber::GetPhysicsHandle() 
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	// Look for attached Physics Handle
+	PhysicsHandler = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if (!PhysicsHandler) {
+		UE_LOG(LogTemp, Error, TEXT("%s needs a PhysicsHandle added as a component"), *GetOwner()->GetName());
+	}
+}
 
+void UGrabber::BindInputComponent() 
+{
+	//Look for Input Component added at runtime
+	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
+	if (InputComponent) {
+		UE_LOG(LogTemp, Warning, TEXT("%s, InputComponent has been added at runtime"), *GetOwner()->GetName());
+		///Bind the input axis
+		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("%s, InputComponent has not been added at runtime"), *GetOwner()->GetName());
+	}
+}
+
+void UGrabber::Grab() {
+	//Check if hitting some PhysicsBody
+	FHitResult Hit = GetLineTracingCollision();
+
+	if (Hit.GetActor() != NULL) {
+		UE_LOG(LogTemp, Warning, TEXT("Hitting: %s"), *Hit.GetActor()->GetName());
+	}
+}
+
+FHitResult UGrabber::GetLineTracingCollision()
+{
 	//Getting Player Viewpoint Location and Rotation
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;
 	GetWorld()->
 		GetFirstPlayerController()->
 		GetPlayerViewPoint(PlayerViewPointLocation, PlayerViewPointRotation);
-	
+
 	//Calculating Line End using player rotation and reach
 	FVector LineEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*Reach;
-
-	//Draw a Green Line (only for testing purposes)
-	DrawDebugLine(
-		GetWorld(), 
-		PlayerViewPointLocation, 
-		LineEnd,
-		FColor(0,255,0), 
-		false, 
-		0.f, 
-		0, 
-		10.f);
 
 	//Line tracing (Ray casting)
 	FHitResult Hit;
@@ -63,9 +81,16 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		FCollisionQueryParams(FName(TEXT("")), false, GetOwner())
 	);
 
-	if (Hit.GetActor() != NULL) {
-		UE_LOG(LogTemp, Warning, TEXT("Hitting: %s"), *Hit.GetActor()->GetName());
-	}
+	return Hit;
+}
 
+void UGrabber::Release() 
+{
+}
+
+// Called every frame
+void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
