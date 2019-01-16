@@ -34,7 +34,7 @@ void UOpenDoorBlueprint::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	{
 		OnOpen.Broadcast();
 	}
-	else if (GetOwner()->GetActorRotation().Yaw < 90.f)
+	else
 	{
 		OnClose.Broadcast();
 	}
