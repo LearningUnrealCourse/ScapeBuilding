@@ -19,8 +19,13 @@ UOpenDoor::UOpenDoor()
 void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
-	Opener = GetWorld()->GetFirstPlayerController()->GetPawn();
-	// ...
+
+	if (!Opener)
+	{
+		Opener = GetWorld()->GetFirstPlayerController()->GetPawn();
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Opener: %s"), *Opener->GetName());
+
 	RotateDoor(0);
 	UE_LOG(LogTemp, Warning, TEXT("Begin Play!"));
 
@@ -45,7 +50,6 @@ void UOpenDoor::RotateDoor(float DeltaTime) {
 	FRotator currentRotation = owner->GetActorRotation();
 
 	if ((currentRotation.Yaw >= OpenAngle && DeltaTime > 0) || (currentRotation.Yaw <= 90 && DeltaTime < 0)) {
-		UE_LOG(LogTemp, Warning, TEXT("Current Rotation: %f"), currentRotation.Yaw);
 		currentRotation.Yaw -= DeltaTime*100;
 		owner->SetActorRotation(currentRotation);
 	}

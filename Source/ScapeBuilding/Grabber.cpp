@@ -5,7 +5,7 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Controller.h"
-
+#include "Components/PrimitiveComponent.h"
 
 // Sets default values for this component's properties
 UGrabber::UGrabber()
@@ -50,12 +50,19 @@ void UGrabber::BindInputComponent()
 	}
 }
 
-void UGrabber::Grab() {
+void UGrabber::Grab() 
+{
 	//Check if hitting some PhysicsBody
 	FHitResult Hit = GetLineTracingCollision();
 
-	if (Hit.GetActor() != NULL) {
+	if (Hit.GetActor()) 
+	{
 		UE_LOG(LogTemp, Warning, TEXT("Hitting: %s"), *Hit.GetActor()->GetName());
+		UPrimitiveComponent* GrabbedComponent = Hit.GetComponent();
+		PhysicsHandler->GrabComponentAtLocation(
+			GrabbedComponent, 
+			NAME_None, 
+			GrabbedComponent->GetOwner()->GetActorLocation());
 	}
 }
 
@@ -86,11 +93,29 @@ FHitResult UGrabber::GetLineTracingCollision()
 
 void UGrabber::Release() 
 {
+	if (PhysicsHandler->GrabbedComponent) 
+	{
+		PhysicsHandler->ReleaseComponent();
+	}
 }
 
 // Called every frame
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (PhysicsHandler->GrabbedComponent)
+	{
+		FVector PlayerViewPointLocation;
+		FRotator PlayerViewPointRotation;
+		GetWorld()->
+			GetFirstPlayerController()->
+			GetPlayerViewPoint(PlayerViewPointLocation, PlayerViewPointRotation);
+
+		//Calculating Line End using player rotation and reach
+		FVector LineEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*Reach;
+
+		PhysicsHandler->SetTargetLocation(LineEnd);
+	}
 }
 
