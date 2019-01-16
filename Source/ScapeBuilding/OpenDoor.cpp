@@ -10,8 +10,6 @@ UOpenDoor::UOpenDoor()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -24,11 +22,8 @@ void UOpenDoor::BeginPlay()
 	{
 		Opener = GetWorld()->GetFirstPlayerController()->GetPawn();
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Opener: %s"), *Opener->GetName());
 
 	RotateDoor(0);
-	UE_LOG(LogTemp, Warning, TEXT("Begin Play!"));
-
 }
 
 

@@ -12,16 +12,6 @@ class SCAPEBUILDING_API UOpenDoor : public UActorComponent
 {
 	GENERATED_BODY()
 
-private:
-	UPROPERTY(VisibleAnywhere)
-	float OpenAngle = 0.0f;
-
-	UPROPERTY(EditAnywhere)
-	ATriggerVolume* PressurePlate;
-
-	UPROPERTY(EditAnywhere)
-	AActor* Opener;
-
 public:	
 	// Sets default values for this component's properties
 	UOpenDoor();
@@ -35,7 +25,15 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	void RotateDoor(float DeltaTime);
 
-		
+	UPROPERTY(VisibleAnywhere)
+		float OpenAngle = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+		ATriggerVolume* PressurePlate;
+
+	UPROPERTY(EditAnywhere)
+		AActor* Opener;
+
+	void RotateDoor(float DeltaTime);		
 };

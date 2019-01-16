@@ -27,6 +27,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	
+
 private:
 	UPROPERTY(EditAnywhere)
 	float Reach = 100.0f; 
@@ -39,4 +41,6 @@ private:
 	void GetPhysicsHandle();
 	void BindInputComponent();
 	FHitResult GetLineTracingCollision();
+	FVector GetPlayerLineEndReachPosition();
+	FVector GetPlayerLineStartPosition();
 };

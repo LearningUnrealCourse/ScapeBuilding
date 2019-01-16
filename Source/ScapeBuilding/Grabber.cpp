@@ -40,8 +40,6 @@ void UGrabber::BindInputComponent()
 	//Look for Input Component added at runtime
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 	if (InputComponent) {
-		UE_LOG(LogTemp, Warning, TEXT("%s, InputComponent has been added at runtime"), *GetOwner()->GetName());
-		///Bind the input axis
 		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
 		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 	}
@@ -59,31 +57,22 @@ void UGrabber::Grab()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hitting: %s"), *Hit.GetActor()->GetName());
 		UPrimitiveComponent* GrabbedComponent = Hit.GetComponent();
-		PhysicsHandler->GrabComponentAtLocation(
+		PhysicsHandler->GrabComponentAtLocationWithRotation(
 			GrabbedComponent, 
 			NAME_None, 
-			GrabbedComponent->GetOwner()->GetActorLocation());
+			GrabbedComponent->GetOwner()->GetActorLocation(), 
+			FRotator(0.f,0.f,0.f));
 	}
 }
 
 FHitResult UGrabber::GetLineTracingCollision()
 {
-	//Getting Player Viewpoint Location and Rotation
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-	GetWorld()->
-		GetFirstPlayerController()->
-		GetPlayerViewPoint(PlayerViewPointLocation, PlayerViewPointRotation);
-
-	//Calculating Line End using player rotation and reach
-	FVector LineEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*Reach;
-
 	//Line tracing (Ray casting)
 	FHitResult Hit;
 	GetWorld()->LineTraceSingleByObjectType(
 		Hit,
-		PlayerViewPointLocation,
-		LineEnd,
+		GetPlayerLineStartPosition(),
+		GetPlayerLineEndReachPosition(),
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		FCollisionQueryParams(FName(TEXT("")), false, GetOwner())
 	);
@@ -106,16 +95,28 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
 	if (PhysicsHandler->GrabbedComponent)
 	{
-		FVector PlayerViewPointLocation;
-		FRotator PlayerViewPointRotation;
-		GetWorld()->
-			GetFirstPlayerController()->
-			GetPlayerViewPoint(PlayerViewPointLocation, PlayerViewPointRotation);
-
-		//Calculating Line End using player rotation and reach
-		FVector LineEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*Reach;
-
-		PhysicsHandler->SetTargetLocation(LineEnd);
+		PhysicsHandler->SetTargetLocation(GetPlayerLineEndReachPosition());
 	}
+}
+
+FVector UGrabber::GetPlayerLineEndReachPosition() {
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	GetWorld()->
+		GetFirstPlayerController()->
+		GetPlayerViewPoint(PlayerViewPointLocation, PlayerViewPointRotation);
+
+	//Calculating Line End using player rotation and reach
+	return PlayerViewPointLocation + PlayerViewPointRotation.Vector()*Reach;
+}
+
+FVector UGrabber::GetPlayerLineStartPosition() {
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	GetWorld()->
+		GetFirstPlayerController()->
+		GetPlayerViewPoint(PlayerViewPointLocation, PlayerViewPointRotation);
+
+	return PlayerViewPointLocation;
 }
 
