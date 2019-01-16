@@ -34,7 +34,7 @@ void UOpenDoorBlueprint::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	{
 		OnOpen.Broadcast();
 	}
-	else
+	else 
 	{
 		OnClose.Broadcast();
 	}
